@@ -20,6 +20,8 @@ env:
   ECS_SERVICE: CT-ECS-service
   ECS_CLUSTER: CT-ECS-cluster
   CONTAINER_NAME: nodejs-app
+  TASK_DEFINITION: CT-ECS-dev-task
+
 
 jobs:
   build-and-push:
@@ -95,7 +97,7 @@ jobs:
     - name: Download current task definition
       run: |
         aws ecs describe-task-definition \
-          --task-definition $ECS_SERVICE \
+          --task-definition $TASK_DEFINITION \
           --query taskDefinition > task-definition.json
 
     - name: Update task definition with new image
