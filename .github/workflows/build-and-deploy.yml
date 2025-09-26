@@ -17,10 +17,13 @@ env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: public.ecr.aws/n4o6g6h8
   ECR_REPOSITORY: my-ecs-nodejs-app
+  PROJECT_NAME: CT-ECS
   ECS_SERVICE: CT-ECS-service
   ECS_CLUSTER: CT-ECS-cluster
   CONTAINER_NAME: nodejs-app
-  TASK_DEFINITION: CT-ECS-dev-task
+  TASK_DEFINITION: CT-ECS-task
+  TF_VERSION: 1.5.0
+  APP_PORT: 8080
 
 
 jobs:

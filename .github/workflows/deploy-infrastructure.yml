@@ -2,20 +2,12 @@ name: Deploy ECS Infrastructure
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        default: 'dev'
-        type: choice
-        options:
-          - dev
-          - staging
-          - prod
 
 env:
   AWS_REGION: us-east-1
   TF_VERSION: 1.5.0
+  PROJECT_NAME: CT-ECS
+  APP_PORT: 8080
 
 jobs:
   deploy:
@@ -46,8 +38,8 @@ jobs:
       working-directory: ./infrastructure
       run: |
         terraform plan \
-          -var="project_name=CT-ECS-${{ github.event.inputs.environment }}" \
-          -var="common_tags={Environment=\"${{ github.event.inputs.environment }}\",Project=\"nodejs-app\",ManagedBy=\"terraform\"}" \
+          -var="project_name=${{ env.PROJECT_NAME }}" \
+          -var="common_tags={Project=\"nodejs-app\",ManagedBy=\"terraform\"}" \
           -out=tfplan
 
     - name: Terraform Apply
@@ -58,8 +50,6 @@ jobs:
       working-directory: ./infrastructure
       run: |
         echo "## Infrastructure Deployment Complete!" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Load Balancer DNS:** $(terraform output -raw load_balancer_dns 2>/dev/null || echo 'Not available')" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY

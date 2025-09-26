@@ -3,15 +3,6 @@ name: Destroy ECS Infrastructure
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Environment to destroy'
-        required: true
-        default: 'dev'
-        type: choice
-        options:
-          - dev
-          - staging
-          - prod
       confirm_destroy:
         description: 'Type "DESTROY" to confirm destruction'
         required: true
@@ -20,6 +11,8 @@ on:
 env:
   AWS_REGION: us-east-1
   TF_VERSION: 1.5.0
+  PROJECT_NAME: CT-ECS
+  APP_PORT: 8080
 
 jobs:
   destroy:
@@ -58,8 +51,8 @@ jobs:
       working-directory: ./infrastructure
       run: |
         terraform plan -destroy \
-          -var="project_name=CT-ECS-${{ github.event.inputs.environment }}" \
-          -var="common_tags={Environment=\"${{ github.event.inputs.environment }}\",Project=\"nodejs-app\",ManagedBy=\"terraform\"}" \
+          -var="project_name=${{ env.PROJECT_NAME }}" \
+          -var="common_tags={Project=\"nodejs-app\",ManagedBy=\"terraform\"}" \
           -out=destroy-plan
 
     - name: Terraform Destroy
@@ -69,7 +62,5 @@ jobs:
     - name: Cleanup Summary
       run: |
         echo "## Infrastructure Destruction Complete!" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "All resources have been successfully destroyed." >> $GITHUB_STEP_SUMMARY
