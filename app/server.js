@@ -85,7 +85,7 @@ function getPage(message) {
     + "    <p>ENVIRONMENT: " + ENV + "</p>\n"
     + "  </div>\n"
     + "  <div class=\"middle\">\n"
-    + "    <h1>Application - v2 </h1>\n"
+    + "    <h1>Application - v2</h1>\n"
     + "    <h1>Host/container name</h1>\n"
     + "    <hr>\n"
     + "    <p>" + OS.hostname() + "</p>\n"
