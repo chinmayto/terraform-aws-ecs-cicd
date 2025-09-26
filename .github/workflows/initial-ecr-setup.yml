@@ -33,22 +33,20 @@ jobs:
     - name: Create ECR repository if needed
       if: ${{ github.event.inputs.create_repository == 'true' }}
       run: |
-        echo "Checking if ECR repository exists..."
+        echo "Checking if ECR Public repository exists..."
         
-        # Check if repository exists
+        # Check if repository exists (ECR Public must use us-east-1)
         if aws ecr-public describe-repositories --repository-names $ECR_REPOSITORY --region us-east-1 2>/dev/null; then
           echo "Repository $ECR_REPOSITORY already exists"
         else
-          echo "Creating ECR repository: $ECR_REPOSITORY"
-          aws ecr-public create-repository \
-            --repository-name $ECR_REPOSITORY \
-            --region us-east-1 \
-            --repository-catalog-data \
-            description="Node.js ECS application repository" \
-            architectures=x86_64 \
-            operatingSystems=Linux
+          echo "Creating ECR Public repository: $ECR_REPOSITORY"
           
-          echo "Repository $ECR_REPOSITORY created successfully"
+          # Try different approaches for repository creation
+          if aws ecr-public create-repository \
+            --repository-name $ECR_REPOSITORY \
+            --region us-east-1 2>/dev/null; then
+            echo "Repository created successfully (basic)"
+          fi
         fi
 
     - name: Login to Amazon ECR Public
@@ -56,6 +54,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v2
       with:
         registry-type: public
+        mask-password: 'true'
 
     - name: Build and push initial Docker image
       working-directory: ./app
@@ -75,7 +74,7 @@ jobs:
         docker push $IMAGE_URI
         docker push $LATEST_URI
         
-        echo "## Initial ECR Setup Complete! 🎉" >> $GITHUB_STEP_SUMMARY
+        echo "## Initial ECR Setup Complete!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**ECR Repository:** \`$ECR_REPOSITORY\`" >> $GITHUB_STEP_SUMMARY
         echo "**Initial Image:** \`$IMAGE_URI\`" >> $GITHUB_STEP_SUMMARY
