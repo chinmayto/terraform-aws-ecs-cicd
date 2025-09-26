@@ -1,0 +1,38 @@
+# Copy this file to terraform.tfvars and update the values
+
+aws_region = "us-east-1"
+project_name = "nodejs-app"
+
+# VPC Configuration
+vpc_cidr = "10.0.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
+private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
+public_subnets = ["10.0.101.0/24", "10.0.102.0/24"]
+
+# ECR Repository URL - Update this with your actual ECR repository URL
+ecr_repository_url = "public.ecr.aws/n4o6g6h8/simple-nodejs-app-1:latest"
+
+# Application Configuration
+app_port = 8080
+
+# Task Definition Configuration
+task_cpu = 256
+task_memory = 512
+log_retention_days = 7
+
+# Common Tags
+common_tags = {
+  Environment = "dev"
+  Project     = "nodejs-app"
+  ManagedBy   = "terraform"
+  Owner       = "your-name"
+}
+
+# Auto Scaling Configuration
+min_capacity = 1
+max_capacity = 10
+cpu_target_value = 70
+memory_target_value = 80
+requests_per_target = 1000
+scale_in_cooldown = 300
+scale_out_cooldown = 300

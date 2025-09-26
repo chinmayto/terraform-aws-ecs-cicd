@@ -1,0 +1,124 @@
+name: Build and Deploy Application
+
+on:
+  push:
+    paths:
+      - 'app/**'
+    branches:
+      - main
+      - develop
+  pull_request:
+    paths:
+      - 'app/**'
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: public.ecr.aws/n4o6g6h8
+  ECR_REPOSITORY: my-ecs-nodejs-app
+  ECS_SERVICE: CT-ECS-service
+  ECS_CLUSTER: CT-ECS-cluster
+  CONTAINER_NAME: nodejs-app
+
+jobs:
+  build-and-push:
+    name: Build and Push to ECR
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.build-image.outputs.image-tag }}
+      image-uri: ${{ steps.build-image.outputs.image-uri }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR Public
+      id: login-ecr-public
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        registry-type: public
+
+    - name: Build and push Docker image
+      id: build-image
+      working-directory: ./app
+      run: |
+        # Generate image tag using git commit SHA and timestamp
+        IMAGE_TAG="${GITHUB_SHA:0:8}-$(date +%s)"
+        IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        
+        echo "Building image: $IMAGE_URI"
+        
+        # Build the Docker image
+        docker build -t $IMAGE_URI .
+        
+        # Push the image to ECR
+        docker push $IMAGE_URI
+        
+        # Also tag and push as latest
+        docker tag $IMAGE_URI $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        
+        echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+        
+        echo "## Docker Image Built and Pushed! 🐳" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Image URI:** \`$IMAGE_URI\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Image Tag:** \`$IMAGE_TAG\`" >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    name: Deploy to ECS
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Download current task definition
+      run: |
+        aws ecs describe-task-definition \
+          --task-definition $ECS_SERVICE \
+          --query taskDefinition > task-definition.json
+
+    - name: Update task definition with new image
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ needs.build-and-push.outputs.image-uri }}
+
+    - name: Deploy to Amazon ECS service
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
+
+    - name: Deployment Summary
+      run: |
+        echo "## Application Deployed Successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**New Image:** \`${{ needs.build-and-push.outputs.image-uri }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**ECS Service:** \`${{ env.ECS_SERVICE }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**ECS Cluster:** \`${{ env.ECS_CLUSTER }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "The service is now running with the latest application code." >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,97 @@
+name: Initial ECR Setup and First Image Push
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_repository:
+        description: 'Create ECR repository if it does not exist'
+        required: true
+        default: true
+        type: boolean
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: public.ecr.aws/n4o6g6h8
+  ECR_REPOSITORY: my-ecs-nodejs-app
+
+jobs:
+  setup-and-push:
+    name: Setup ECR and Push Initial Image
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Create ECR repository if needed
+      if: ${{ github.event.inputs.create_repository == 'true' }}
+      run: |
+        echo "Checking if ECR repository exists..."
+        
+        # Check if repository exists
+        if aws ecr-public describe-repositories --repository-names $ECR_REPOSITORY --region us-east-1 2>/dev/null; then
+          echo "Repository $ECR_REPOSITORY already exists"
+        else
+          echo "Creating ECR repository: $ECR_REPOSITORY"
+          aws ecr-public create-repository \
+            --repository-name $ECR_REPOSITORY \
+            --region us-east-1 \
+            --repository-catalog-data \
+            description="Node.js ECS application repository" \
+            architectures=x86_64 \
+            operatingSystems=Linux
+          
+          echo "Repository $ECR_REPOSITORY created successfully"
+        fi
+
+    - name: Login to Amazon ECR Public
+      id: login-ecr-public
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        registry-type: public
+
+    - name: Build and push initial Docker image
+      working-directory: ./app
+      run: |
+        # Generate initial image tag
+        INITIAL_TAG="v1.0.0-initial"
+        IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$INITIAL_TAG"
+        LATEST_URI="$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+        
+        echo "Building initial image: $IMAGE_URI"
+        
+        # Build the Docker image
+        docker build -t $IMAGE_URI .
+        docker tag $IMAGE_URI $LATEST_URI
+        
+        # Push both tagged and latest versions
+        docker push $IMAGE_URI
+        docker push $LATEST_URI
+        
+        echo "## Initial ECR Setup Complete! 🎉" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**ECR Repository:** \`$ECR_REPOSITORY\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Initial Image:** \`$IMAGE_URI\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Latest Image:** \`$LATEST_URI\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Repository is now ready for infrastructure deployment!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
+        echo "1. Run the 'Deploy ECS Infrastructure' workflow" >> $GITHUB_STEP_SUMMARY
+        echo "2. Future app changes will automatically trigger builds and deployments" >> $GITHUB_STEP_SUMMARY
+
+    - name: Verify image in ECR
+      run: |
+        echo "Verifying images in ECR repository..."
+        aws ecr-public describe-images \
+          --repository-name $ECR_REPOSITORY \
+          --region us-east-1 \
+          --query 'imageDetails[*].[imageTags[0],imagePushedAt]' \
+          --output table
