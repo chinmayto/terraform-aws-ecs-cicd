@@ -9,11 +9,10 @@ terraform {
 
   backend "s3" {
     bucket                     = "chinmayto-terraform-state-bucket-1755526674"
-    key                        = "ecs-cluster/terraform.tfstate"
+    key                        = "ecs-cluster-cicd/terraform.tfstate"
     region                     = "us-east-1"
     encrypt                    = true
-    use_lockfile               = true
-    skip_requesting_account_id = false
+    dynamodb_table = "ct-terraform-lock-table"
   }
 }
 
