@@ -33,7 +33,7 @@ output "ecs_cluster_name" {
   value       = module.ecs_cluster.name
 }
 
-output "load_balancer_dns_name" {
+output "load_balancer_dns" {
   description = "DNS name of the load balancer"
   value       = aws_lb.main.dns_name
 }

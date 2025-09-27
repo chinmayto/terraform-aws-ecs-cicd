@@ -129,6 +129,9 @@ module "ecs_service" {
     }
   }
 
+  # Ensure load balancer listener is created before ECS service
+  depends_on = [aws_lb_listener.web]
+
   subnet_ids = module.vpc.private_subnets
   security_group_rules = {
     alb_ingress = {

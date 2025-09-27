@@ -67,6 +67,9 @@ resource "aws_lb_target_group" "ecs_tg" {
   }
 
   tags = var.common_tags
+
+  # Ensure target group is created after VPC
+  depends_on = [module.vpc]
 }
 ################################################################################
 # ALB Listener
@@ -77,8 +80,12 @@ resource "aws_lb_listener" "web" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.ecs_tg.arn
+    type = "forward"
+    forward {
+      target_group {
+        arn = aws_lb_target_group.ecs_tg.arn
+      }
+    }
   }
 
   tags = var.common_tags

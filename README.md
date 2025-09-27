@@ -19,6 +19,40 @@ In this blog, we’ll mainly focus on the CI/CD workflow for application version
 
 When a new version of your application is committed to the repository, the following GitHub Actions workflow ensures it is automatically built and deployed to ECS.
 
+### Secrets in GitHub Actions
+
+For the above workflows, you’ll need to store sensitive information as GitHub Secrets. Navigate to your repository → Settings → Secrets and variables → Actions and add:
+- `AWS_ACCESS_KEY_ID` – IAM user or role access key.
+- `AWS_SECRET_ACCESS_KEY` – Corresponding secret key.
+
+This ensures that no credentials are exposed in your workflow files.
+
+The DevOps IAM user that will create the ECS infrastructure and run CICD pipelines will need following accesses. It will also need access to terraform state bucket and dynamodb table used for terraform state locking. Following Principle of least privilege is the need of the day!
+
+```json
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Action": [
+				"ecr-public:*",
+				"ecr:*",
+				"ecs:*",
+				"ec2:*",
+				"elasticloadbalancing:*",
+				"logs:*",
+				"iam:*",
+				"application-autoscaling:*",
+				"sts:GetServiceBearerToken",
+				"sts:GetCallerIdentity"
+			],
+			"Resource": "*"
+		}
+	]
+}
+```
+
 ## Initial Setup
 
 To create the public ECR repository and push initial verison of the application to it use `initial-ecr-setup.yml` workflow and then use `deploy-infrastructure.yml` workflow to create ECS infrastructure with baseic version of the application.
@@ -129,6 +163,14 @@ The new task definition is deployed to ECS using aws-actions/amazon-ecs-deploy-t
 ## Accessing the Application
 
 Once the workflow finishes, navigate to the Application Load Balancer (ALB) DNS name associated with your ECS service. You should see the new version of the application running seamlessly.
+
+Initial ECR setup and push image:
+
+![alt text](image.png)
+
+![alt text](image-1.png)
+
+Build ECS infrastructure:
 
 
 ## Cleanup
