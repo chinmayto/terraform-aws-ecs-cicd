@@ -166,21 +166,35 @@ Once the workflow finishes, navigate to the Application Load Balancer (ALB) DNS 
 
 Initial ECR setup and push image:
 
-![alt text](image.png)
+![alt text](/images/initial-setup-1.png)
 
-![alt text](image-1.png)
+![alt text](/images/initial-setup-2.png)
 
 Build ECS infrastructure:
 
-![alt text](image-2.png)
+![alt text](/images/build-ecs-infra.png)
 
 Access initial version of application using ALB:
 
-![alt text](image-3.png)
+![alt text](/images/app-v1.png)
 
 Now update the code, do git push and watch the build and deploy workflow run automatically!:
 
+New image built and pushed to ECR:
 
+![alt text](/images/new-ecr-image.png)
+
+ECS Service Deployemnt in progress:
+
+![alt text](/images/ecs-deployment.png)
+
+Deployment complete!
+
+![alt text](/images/deploy-complete.png)
+
+Yay!!
+
+![alt text](/images/app-v2.png)
 
 ## Cleanup
 
