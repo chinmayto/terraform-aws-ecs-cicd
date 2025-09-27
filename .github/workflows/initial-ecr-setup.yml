@@ -83,15 +83,12 @@ jobs:
         
         echo "## Initial ECR Setup Complete!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Project:** \`${{ env.PROJECT_NAME }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**ECR Repository:** \`$ECR_REPOSITORY\`" >> $GITHUB_STEP_SUMMARY
         echo "**Initial Image:** \`$IMAGE_URI\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Latest Image:** \`$LATEST_URI\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Registry:** \`$ECR_REGISTRY\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Repository is now ready for infrastructure deployment!" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
-        echo "1. Run the 'Deploy ECS Infrastructure' workflow" >> $GITHUB_STEP_SUMMARY
-        echo "2. Future app changes will automatically trigger builds and deployments" >> $GITHUB_STEP_SUMMARY
+        echo "Repository is ready for infrastructure deployment." >> $GITHUB_STEP_SUMMARY
 
     - name: Verify image in ECR
       run: |

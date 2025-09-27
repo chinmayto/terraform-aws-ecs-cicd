@@ -63,4 +63,7 @@ jobs:
       run: |
         echo "## Infrastructure Destruction Complete!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "All resources have been successfully destroyed." >> $GITHUB_STEP_SUMMARY
+        echo "**Project:** \`${{ env.PROJECT_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Status:** All resources successfully destroyed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "All AWS resources for this project have been removed." >> $GITHUB_STEP_SUMMARY

@@ -51,6 +51,9 @@ jobs:
       run: |
         echo "## Infrastructure Deployment Complete!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Load Balancer DNS:** $(terraform output -raw load_balancer_dns 2>/dev/null || echo 'Not available')" >> $GITHUB_STEP_SUMMARY
+        echo "**Project:** \`${{ env.PROJECT_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**ECS Cluster:** \`$(terraform output -raw ecs_cluster_name 2>/dev/null || echo '${{ env.PROJECT_NAME }}-cluster')\`" >> $GITHUB_STEP_SUMMARY
+        echo "**ECS Service:** \`${{ env.PROJECT_NAME }}-service\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Load Balancer DNS:** \`$(terraform output -raw load_balancer_dns 2>/dev/null || echo 'Not available')\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**ECS Cluster:** $(terraform output -raw ecs_cluster_name 2>/dev/null || echo 'Not available')" >> $GITHUB_STEP_SUMMARY
+        echo "Infrastructure is ready for application deployments." >> $GITHUB_STEP_SUMMARY

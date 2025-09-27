@@ -77,8 +77,10 @@ jobs:
         
         echo "## Docker Image Built and Pushed!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Project:** \`${{ env.PROJECT_NAME }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Image URI:** \`$IMAGE_URI\`" >> $GITHUB_STEP_SUMMARY
         echo "**Image Tag:** \`$IMAGE_TAG\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Registry:** \`${{ env.ECR_REGISTRY }}\`" >> $GITHUB_STEP_SUMMARY
 
   deploy:
     name: Deploy to ECS
@@ -123,8 +125,10 @@ jobs:
       run: |
         echo "## Application Deployed Successfully!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Project:** \`${{ env.PROJECT_NAME }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**New Image:** \`${{ needs.build-and-push.outputs.image-uri }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**ECS Service:** \`${{ env.ECS_SERVICE }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**ECS Cluster:** \`${{ env.ECS_CLUSTER }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Container:** \`${{ env.CONTAINER_NAME }}\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "The service is now running with the latest application code." >> $GITHUB_STEP_SUMMARY
+        echo "Service is running with the latest application code." >> $GITHUB_STEP_SUMMARY
