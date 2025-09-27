@@ -172,6 +172,15 @@ Initial ECR setup and push image:
 
 Build ECS infrastructure:
 
+![alt text](image-2.png)
+
+Access initial version of application using ALB:
+
+![alt text](image-3.png)
+
+Now update the code, do git push and watch the build and deploy workflow run automatically!:
+
+
 
 ## Cleanup
 
