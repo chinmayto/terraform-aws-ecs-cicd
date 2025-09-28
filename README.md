@@ -19,6 +19,8 @@ In this blog, we’ll mainly focus on the CI/CD workflow for application version
 
 When a new version of your application is committed to the repository, the following GitHub Actions workflow ensures it is automatically built and deployed to ECS.
 
+![alt text](/images/architecture.png)
+
 ### Secrets in GitHub Actions
 
 For the above workflows, you’ll need to store sensitive information as GitHub Secrets. Navigate to your repository → Settings → Secrets and variables → Actions and add:
